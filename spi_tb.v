@@ -52,11 +52,11 @@ module tb_spi_duplex;
         start = 1;
         #20 start = 0;           // Pulse start
 
-        wait(done);              // Wait until master signals done
+        @(posedge done);         // Wait until master signals done
         #20;
 
-        $display("Test 1: Master sent = %h, Master received = %h, Slave received = %h",
-                 master_data_in, master_data_out, slave_data_out);
+        $display("Test 1: Master sent = %b  Slave received = %b Slave sent = %b  Master received = %b \n",
+                 master_data_in, slave_data_out, slave_data_in, master_data_out);
 
         // Test case 2
         master_data_in = 8'h55;  // Master sends 0x55
@@ -64,11 +64,11 @@ module tb_spi_duplex;
         start = 1;
         #20 start = 0;
 
-        wait(done);
+        @(posedge done);
         #20;
 
-        $display("Test 2: Master sent = %h, Master received = %h, Slave received = %h",
-                 master_data_in, master_data_out, slave_data_out);
+        $display("Test 2: Master sent = %b  Slave received = %b Slave sent = %b Master received = %b ",
+                master_data_in,slave_data_out,slave_data_in,master_data_out );
 
         // End simulation
         #100;
@@ -76,3 +76,4 @@ module tb_spi_duplex;
     end
 
 endmodule
+
