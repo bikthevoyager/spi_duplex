@@ -24,6 +24,7 @@ module spi_master #(
     reg [1:0] state;
 
     reg [7:0] shift_reg;
+    reg [7:0] received;
     reg [2:0] bit_cnt;
 
     always @(posedge clk or posedge reset) begin
@@ -53,6 +54,7 @@ module spi_master #(
             busy      <= 0;
             done      <= 0;
             data_out  <= 0;
+            received  <= 0;
             shift_reg <= 0;
             bit_cnt   <= 0;
         end else begin
@@ -72,21 +74,22 @@ module spi_master #(
                     CS   <= 0;    
                     busy <= 1;
                     bit_cnt <= 3'd7;
+                    MOSI <= shift_reg[7];
                     state <= TRANSFER;
                 end
 
                 TRANSFER: begin
                     if (spi_clk_en) begin
                         SCLK <= ~SCLK;
-                        if (!SCLK) begin
-                            MOSI <= shift_reg[bit_cnt];
-                        end else begin
-                            data_out[bit_cnt] <= MISO;
+                        if (SCLK) begin
+                            received[bit_cnt] <= MISO;
                             if (bit_cnt == 0) begin
                                 state <= FINISH;
                             end else begin
                                 bit_cnt <= bit_cnt - 1;
                             end
+                        end else begin
+                            MOSI <= shift_reg[bit_cnt];
                         end
                     end
                 end
@@ -95,10 +98,18 @@ module spi_master #(
                     CS   <= 1;   
                     busy <= 0;
                     done <= 1;   
+                    data_out <= received;
                     state <= IDLE;
                 end
             endcase
         end
     end
+
+endmodule
+
+
+        end
+    end
+
 
 endmodule
