@@ -104,12 +104,5 @@ module spi_master #(
             endcase
         end
     end
-
 endmodule
 
-
-        end
-    end
-
-
-endmodule
