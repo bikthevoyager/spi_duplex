@@ -22,25 +22,31 @@ module spi_slave (
             data_out  <= 0;
             bit_cnt   <= 0;
             MISO      <= 0;
-        end else if (CS) begin
-            // When CS is high, reset
-            shift_out <= data_in; 
-            bit_cnt   <= 0;
+        end
+    end
+
+    always @(negedge CS or posedge reset) begin
+        if (reset) begin
+            MISO <= 0;
+        end else begin
+            MISO <= data_in[7];
+            shift_out <= data_in;
+            bit_cnt <= 0;
         end
     end
 
     always @(posedge SCLK) begin
         if (!CS) begin
-            shift_in <= {shift_in[6:0], MOSI};
+            shift_in <= {shift_in[6:0],MOSI};
             bit_cnt  <= bit_cnt + 1;
             if (bit_cnt == 3'd7) begin
-                data_out <= {shift_in[6:0], MOSI}; // complete byte
+                data_out <={shift_in[6:0],MOSI}; // complete byte
                 bit_cnt  <= 0;
             end
         end
     end
     // Drive outgoing bit on falling edge of SCLK when CS is low
-    always @(negedge SCLK) begin
+    always @(posedge SCLK) begin
         if (!CS) begin
             MISO      <= shift_out[7];
             shift_out <= {shift_out[6:0], 1'b0};
@@ -48,3 +54,4 @@ module spi_slave (
     end
 
 endmodule
+
