@@ -1,79 +1,55 @@
 `timescale 1ns / 1ps
-`include "spi_top.v"
+ `include "spi_master.v"
+ `include "spi_slave.v"
 
-module tb_spi_duplex;
- initial begin
-    $dumpfile("spi.vcd");
-    $dumpvars(0, tb_spi_duplex);
-    end
-    // Testbench signals
-    reg        clk;
-    reg        reset;
-    reg        start;
-    reg  [7:0] master_data_in;
-    reg  [7:0] slave_data_in;
+module spi_full_duplex_top (
+    input        clk,       // System clock
+    input        reset,     // Reset
+    input        start,     // Start transfer (master)
+    input  [7:0] master_data_in, // Data to send from master to slave
+    input  [7:0] slave_data_in,  // Data to preload into slave for response
 
-    wire [7:0] master_data_out;
-    wire [7:0] slave_data_out;
-    wire       done;
-    wire       busy;
+    output [7:0] master_data_out, // Data received by master from slave
+    output [7:0] slave_data_out,  // Data received by slave from master
+    output       done,            // Master done flag
+    output       busy             // Master busy flag
+);
 
-    // Instantiate the top module
-    spi_full_duplex_top uut (
+    // Internal SPI signals (wires)
+    wire CS;    
+    wire SCLK;
+    wire MOSI; 
+    wire MISO;
+
+    // Instantiate Master
+    spi_master #(
+        .CLK_FREQ(50_000_000),   // 50 MHz system clock
+        .SPI_FREQ(1_000_000)     // 1 MHz SPI clock
+    ) u_master (
         .clk(clk),
         .reset(reset),
+        .data_in(master_data_in),
         .start(start),
-        .master_data_in(master_data_in),
-        .slave_data_in(slave_data_in),
-        .master_data_out(master_data_out),
-        .slave_data_out(slave_data_out),
-        .done(done),
-        .busy(busy)
+        .CS(CS),
+        .SCLK(SCLK),
+        .MOSI(MOSI),
+        .MISO(MISO),
+        .data_out(master_data_out),
+        .busy(busy),
+        .done(done)
     );
 
-    // Clock generation (50 MHz)
-    initial clk = 0;
-    always #10 clk = ~clk; // 20 ns period = 50 MHz
-
-    // Test sequence
-    initial begin
-        // Initialize
-        reset = 1;
-        start = 0;
-        master_data_in = 8'h00;
-        slave_data_in  = 8'h00;
-
-        #100;  // Wait 100 ns
-        reset = 0;
-
-        // Test case 1
-        master_data_in = 8'hA5;  // Master sends 0xA5
-        slave_data_in  = 8'h3C;  // Slave preloads 0x3C
-        start = 1;
-        #20 start = 0;           // Pulse start
-
-        @(posedge done);         // Wait until master signals done
-        #20;
-
-        $display("Test 1: Master sent = %b  Slave received = %b Slave sent = %b  Master received = %b \n",
-                 master_data_in, slave_data_out, slave_data_in, master_data_out);
-
-        // Test case 2
-        master_data_in = 8'h55;  // Master sends 0x55
-        slave_data_in  = 8'hF0;  // Slave preloads 0xF0
-        start = 1;
-        #20 start = 0;
-
-        @(posedge done);
-        #20;
-
-        $display("Test 2: Master sent = %b  Slave received = %b Slave sent = %b Master received = %b ",
-                master_data_in,slave_data_out,slave_data_in,master_data_out );
-
-        // End simulation
-        #100;
-        $finish;
-    end
+    // Instantiate Slave
+    spi_slave u_slave (
+        .clk(clk),
+        .reset(reset),
+        .CS(CS),
+        .SCLK(SCLK),
+        .MOSI(MOSI),
+        .MISO(MISO),
+        .data_out(slave_data_out),
+        .data_in(slave_data_in)
+    );
 
 endmodule
 
