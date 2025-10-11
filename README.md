@@ -2,8 +2,11 @@
 <p align="center">
   <h2><b>SPI MASTER</b></h2>
 <img width="1572" height="707" alt="Screenshot 2025-10-11 131409" src="https://github.com/user-attachments/assets/2406e21b-90d3-4709-93d0-bec69b51907d" />
-SPI MASTER
+  
+<p align="center">
+  <h2><b>SPI SLAVE</b></h2>
 <img width="1427" height="727" alt="Screenshot 2025-10-11 131617" src="https://github.com/user-attachments/assets/e9c2b877-2560-47ef-bdb9-a7dcb64e322c" />
-SPI SLAVE
+
+<p align="center">
+  <h2><b>SPI DUPLEX</b></h2>
 <img width="1548" height="676" alt="Screenshot 2025-10-11 131929" src="https://github.com/user-attachments/assets/a6dd0e2d-39bd-4e2d-a045-67f4cd144e2e" />
-SPI TOP
